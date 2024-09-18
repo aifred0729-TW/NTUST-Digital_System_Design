@@ -1,3 +1,2 @@
 ﻿  main.cpp
-J:\OneDrive - gapps.ntust.edu.tw\NTUST\大二上\數位系統設計\NTUST-Digital_System_Design\Project01\main.cpp(188,24): warning C4244: '引數': 將 'double' 轉換為 'int'，由於類型不同，可能導致資料遺失
   Project01.vcxproj -> J:\OneDrive - gapps.ntust.edu.tw\NTUST\大二上\數位系統設計\NTUST-Digital_System_Design\Project01\x64\Debug\Project01.exe

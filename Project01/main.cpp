@@ -171,7 +171,7 @@ void generateDOTfile(PLAdata data, node* root, std::string dotName) {
 	// Output Element
 	for (unsigned int i = 1; i < data.element; i++) for (auto& s : nodes) if (s->index == i) printElement(s->id, 96 + s->index);
 	cout << PADDING << "0 [label=0, shape=box]" << endl;
-	cout << PADDING << pow(data.element, 2) << " [label=1, shape=box]" << endl << endl;
+	cout << PADDING << data.element * data.element << " [label=1, shape=box]" << endl << endl;
 
 	// Output Line
 	for (unsigned int i = 1; i < data.element-1; i++) {
@@ -185,7 +185,7 @@ void generateDOTfile(PLAdata data, node* root, std::string dotName) {
 	for (auto& s : nodes) {
 		if (s->index == data.element - 1) {
 			printLine(s->id, 0, true);
-			printLine(s->id, pow(data.element, 2), false);
+			printLine(s->id, data.element * data.element, false);
 		}
 	}
 
