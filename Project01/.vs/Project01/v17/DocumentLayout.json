@@ -7,7 +7,7 @@
       "RelativeMoniker": "D:0:0:{A5895184-CA29-4CED-93F5-D9ED36F0EF82}|Project01.vcxproj|solutionrelative:main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A5895184-CA29-4CED-93F5-D9ED36F0EF82}|Project01.vcxproj|D:\\PROGRAMS\\MICROSOFT VISUAL STUDIO\\2022\\COMMUNITY\\VC\\TOOLS\\MSVC\\14.40.33807\\INCLUDE\\UTILITY||{3B902123-F8A7-4915-9F01-361F908088D0}|"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\Programs\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.40.33807\\include\\utility||{3B902123-F8A7-4915-9F01-361F908088D0}|"
     }
   ],
   "DocumentGroupContainers": [
@@ -29,8 +29,7 @@
               "RelativeToolTip": "..\\..\\..\\..\\Programs\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.40.33807\\include\\utility",
               "ViewState": "AQIAAOkCAAAAAAAAAAAzwPMCAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2024-09-18T07:51:29.045Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-09-18T07:51:29.045Z"
             },
             {
               "$type": "Document",
@@ -40,7 +39,7 @@
               "RelativeDocumentMoniker": "main.cpp",
               "ToolTip": "D:\\NTUST\\113-1\\NTUST-Digital_System_Design\\Project01\\main.cpp",
               "RelativeToolTip": "main.cpp",
-              "ViewState": "AQIAABsAAAAAAAAAAAAAAG4AAAAJAAAA",
+              "ViewState": "AQIAAGYAAAAAAAAAAAAjwG0AAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2024-09-18T06:10:58.173Z",
               "EditorCaption": ""

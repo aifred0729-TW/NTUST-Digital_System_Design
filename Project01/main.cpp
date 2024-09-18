@@ -3,6 +3,8 @@
 #include <fstream>
 #include <vector>
 
+#define PADDING "    "
+
 typedef struct {
 	int element;
 	int loadCount;
@@ -10,6 +12,7 @@ typedef struct {
 } PLAdata;
 
 typedef struct node {
+	int id;
 	int index;
 	bool value;
 	bool terminal;
@@ -79,6 +82,9 @@ node* generateTerminalNode(int element, node* lastNode) {
 node* generateBDD(PLAdata data) {
 	node* root = new node();
 	std::vector<node*> endPointNodes, tmpNodes;
+	int id = 0;
+
+	root->id = id;
 
 	endPointNodes.push_back(root);
 
@@ -87,6 +93,8 @@ node* generateBDD(PLAdata data) {
 			for (unsigned int k = 0; k < 2; k++) {
 				node* newNode = new node();
 
+				id++;
+				newNode->id = id;
 				newNode->index = i;
 				newNode->value = NULL;
 				newNode->terminal = false;
@@ -108,6 +116,25 @@ node* generateBDD(PLAdata data) {
 
 void applyPLAvalue(node* root, PLAdata data) {
 	for (unsigned int i = 0; i < data.loadCount; i++) {
+		
 		return;
 	}
+}
+
+void generateDOTfile(PLAdata data, node* root, std::string dotName) {
+	using namespace std;
+
+	cout << "digraph " << dotName << "{" << endl;
+	
+
+	for (unsigned int i = 0; i < data.element; i++) {
+		
+	}
+
+
+	cout << PADDING << "{rank=";
+
+	cout << "}" << endl;
+
+	return;
 }

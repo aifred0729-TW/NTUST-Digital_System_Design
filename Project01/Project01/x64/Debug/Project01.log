@@ -1,6 +1,8 @@
 ﻿  main.cpp
-D:\NTUST\113-1\NTUST-Digital_System_Design\Project01\main.cpp(32,29): warning C4018: '<': signed/unsigned mismatch
-D:\NTUST\113-1\NTUST-Digital_System_Design\Project01\main.cpp(51,29): warning C4018: '<': signed/unsigned mismatch
-D:\NTUST\113-1\NTUST-Digital_System_Design\Project01\main.cpp(54,29): warning C4018: '<': signed/unsigned mismatch
-D:\NTUST\113-1\NTUST-Digital_System_Design\Project01\main.cpp(88,29): warning C4018: '<': signed/unsigned mismatch
+D:\NTUST\113-1\NTUST-Digital_System_Design\Project01\main.cpp(33,29): warning C4018: '<': signed/unsigned mismatch
+D:\NTUST\113-1\NTUST-Digital_System_Design\Project01\main.cpp(52,29): warning C4018: '<': signed/unsigned mismatch
+D:\NTUST\113-1\NTUST-Digital_System_Design\Project01\main.cpp(55,29): warning C4018: '<': signed/unsigned mismatch
+D:\NTUST\113-1\NTUST-Digital_System_Design\Project01\main.cpp(91,29): warning C4018: '<': signed/unsigned mismatch
+D:\NTUST\113-1\NTUST-Digital_System_Design\Project01\main.cpp(118,29): warning C4018: '<': signed/unsigned mismatch
+D:\NTUST\113-1\NTUST-Digital_System_Design\Project01\main.cpp(130,29): warning C4018: '<': signed/unsigned mismatch
   Project01.vcxproj -> D:\NTUST\113-1\NTUST-Digital_System_Design\Project01\x64\Debug\Project01.exe
