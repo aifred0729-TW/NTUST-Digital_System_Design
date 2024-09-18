@@ -1,0 +1,5 @@
+﻿  main.cpp
+J:\OneDrive - gapps.ntust.edu.tw\NTUST\大二上\數位系統設計\NTUST-Digital_System_Design\Project01\main.cpp(29,29): warning C4018: '<': signed/unsigned 不相符
+J:\OneDrive - gapps.ntust.edu.tw\NTUST\大二上\數位系統設計\NTUST-Digital_System_Design\Project01\main.cpp(47,29): warning C4018: '<': signed/unsigned 不相符
+J:\OneDrive - gapps.ntust.edu.tw\NTUST\大二上\數位系統設計\NTUST-Digital_System_Design\Project01\main.cpp(50,29): warning C4018: '<': signed/unsigned 不相符
+  Project01.vcxproj -> J:\OneDrive - gapps.ntust.edu.tw\NTUST\大二上\數位系統設計\NTUST-Digital_System_Design\Project01\x64\Debug\Project01.exe
