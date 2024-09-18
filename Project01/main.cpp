@@ -13,12 +13,11 @@ typedef struct node {
 	int index;
 	bool value;
 	bool terminal;
-	struct node* lNode;
-	struct node* rNode;
+	std::vector<struct node*> childNode;
 } node;
 
 void readFile(PLAdata& data);
-node* generateNewNode(int element, node* oldNode);
+node* generateTerminalNode(int element, node* lastNode);
 node* generateBDD(PLAdata data);
 
 int main() {
@@ -31,6 +30,7 @@ int main() {
 	for (unsigned int i = 0; i < data.loadCount; i++) {
 		cout << data.PLA[i].first << ' ' << data.PLA[i].second << endl;
 	}
+	node* root = generateBDD(data);
 
 	return 0;
 }
@@ -58,53 +58,56 @@ void readFile(PLAdata &data) {
 	return;
 }
 
+node* generateTerminalNode(int element, node* lastNode) {
 
-node* generateLastNode(int element, node* lastNode) {
-
-	node* valueNodeL = (node*)malloc(sizeof(node));
-	valueNodeL->index = 0;
-	valueNodeL->lNode = NULL;
-	valueNodeL->rNode = NULL;
-	valueNodeL->terminal = NULL;
+	node* valueNodeL = new node();
+	valueNodeL->index = element;
+	valueNodeL->terminal = true;
 	valueNodeL->value = false;
 
-
-	node* valueNodeR = (node*)malloc(sizeof(node));
-	valueNodeR->index = 0;
-	valueNodeR->lNode = NULL;
-	valueNodeR->rNode = NULL;
-	valueNodeR->terminal = NULL;
+	node* valueNodeR = new node();
+	valueNodeR->index = element;
+	valueNodeR->terminal = true;
 	valueNodeR->value = true;
 
-	lastNode->terminal = true;
-	lastNode->index = element - 1;
-	lastNode->value = NULL;
-	lastNode->lNode = valueNodeL;
-	lastNode->rNode = valueNodeR;
+	lastNode->childNode.push_back(valueNodeL);
+	lastNode->childNode.push_back(valueNodeR);
 
-	return;
-}
-
-node* _generateBDD(int element, node* oldNode) {
-	if (oldNode->index == element) return generateLastNode(element, oldNode);
-
-	node* newLeft = (node*)malloc(sizeof(node));
-	node* newRight = (node*)malloc(sizeof(node));
-
-	newLeft->index = element;
-	newRight->index = element;
-
-	oldNode->lNode = newLeft;
-	oldNode->rNode = newRight;
-
-	return _generateBDD(element + 1, newLeft);
-	
+	return lastNode;
 }
 
 node* generateBDD(PLAdata data) {
-	node* root = (node*)malloc(sizeof(node));
+	node* root = new node();
+	std::vector<node*> endPointNodes, tmpNodes;
 
+	endPointNodes.push_back(root);
+
+	for (unsigned int i = 1; i < data.element; i++) {
+		for (unsigned int j = 0; j < endPointNodes.size(); j++) {
+			for (unsigned int k = 0; k < 2; k++) {
+				node* newNode = new node();
+
+				newNode->index = i;
+				newNode->value = NULL;
+				newNode->terminal = false;
+
+				tmpNodes.push_back(newNode);
+				endPointNodes[j]->childNode.push_back(newNode);
+			}
+		}
+		endPointNodes = tmpNodes;
+		tmpNodes.clear();
+	}
+
+	for (unsigned int i = 0; i < endPointNodes.size(); i++) {
+		endPointNodes[i] = generateTerminalNode(data.element, endPointNodes[i]);
+	}
 	
-
 	return root;
+}
+
+void applyPLAvalue(node* root, PLAdata data) {
+	for (unsigned int i = 0; i < data.loadCount; i++) {
+		return;
+	}
 }

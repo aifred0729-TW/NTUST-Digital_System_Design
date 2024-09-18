@@ -1,0 +1,63 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\NTUST\\113-1\\NTUST-Digital_System_Design\\Project01\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A5895184-CA29-4CED-93F5-D9ED36F0EF82}|Project01.vcxproj|D:\\NTUST\\113-1\\NTUST-Digital_System_Design\\Project01\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{A5895184-CA29-4CED-93F5-D9ED36F0EF82}|Project01.vcxproj|solutionrelative:main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A5895184-CA29-4CED-93F5-D9ED36F0EF82}|Project01.vcxproj|D:\\PROGRAMS\\MICROSOFT VISUAL STUDIO\\2022\\COMMUNITY\\VC\\TOOLS\\MSVC\\14.40.33807\\INCLUDE\\UTILITY||{3B902123-F8A7-4915-9F01-361F908088D0}|"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "utility",
+              "DocumentMoniker": "D:\\Programs\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.40.33807\\include\\utility",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\Programs\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.40.33807\\include\\utility",
+              "ToolTip": "D:\\Programs\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.40.33807\\include\\utility",
+              "RelativeToolTip": "..\\..\\..\\..\\Programs\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.40.33807\\include\\utility",
+              "ViewState": "AQIAAOkCAAAAAAAAAAAzwPMCAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2024-09-18T07:51:29.045Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "main.cpp",
+              "DocumentMoniker": "D:\\NTUST\\113-1\\NTUST-Digital_System_Design\\Project01\\main.cpp",
+              "RelativeDocumentMoniker": "main.cpp",
+              "ToolTip": "D:\\NTUST\\113-1\\NTUST-Digital_System_Design\\Project01\\main.cpp",
+              "RelativeToolTip": "main.cpp",
+              "ViewState": "AQIAABsAAAAAAAAAAAAAAG4AAAAJAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2024-09-18T06:10:58.173Z",
+              "EditorCaption": ""
+            }
+          ]
+        },
+        {
+          "DockedWidth": 155,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
