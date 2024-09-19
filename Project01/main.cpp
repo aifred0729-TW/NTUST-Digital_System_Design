@@ -17,6 +17,7 @@ typedef struct node {
 	int index;
 	bool value;
 	bool terminal;
+	std::pair<node*, int> rootNode;
 	std::vector<struct node*> childNode;
 } node;
 
@@ -29,6 +30,8 @@ node* generateTerminalNode(node* lastNode);
 node* generateBDD(PLAdata data);
 void generateDOTfile(PLAdata data, node* root, std::string dotName);
 void applyPLAvalue(node* &currentNode, std::string tree);
+void optimizationRedundent(node* currentNode);
+void optimizationNodes(PLAdata data, node* root);
 
 int main() {
 	using namespace std;
@@ -40,6 +43,8 @@ int main() {
 	for (unsigned int i = 0; i < data.PLA.size(); i++) {
 		applyPLAvalue(root, data.PLA[i].first);
 	}
+
+	optimizationNodes(data, root);
 
 	generateDOTfile(data, root, "meow");
 	return 0;
@@ -77,11 +82,15 @@ void initialize(PLAdata& data) {
 	zeroNode->value = false;
 	zeroNode->terminal = true;
 	zeroNode->index = data.element;
+	zeroNode->rootNode.first = NULL;
+	zeroNode->rootNode.second = NULL;
 
 	oneNode->id = data.element * data.element;
 	oneNode->value = true;
 	oneNode->terminal = true;
 	oneNode->index = data.element;
+	oneNode->rootNode.first = NULL;
+	oneNode->rootNode.second = NULL;
 
 	return;
 }
@@ -101,6 +110,8 @@ node* generateBDD(PLAdata data) {
 
 	root->id = id;
 	root->index = 1;
+	root->rootNode.first = NULL;
+	root->rootNode.second = NULL;
 
 	endPointNodes.push_back(root);
 
@@ -114,6 +125,8 @@ node* generateBDD(PLAdata data) {
 				newNode->index = i;
 				newNode->value = NULL;
 				newNode->terminal = false;
+				newNode->rootNode.first = endPointNodes[j];
+				newNode->rootNode.second = k;
 
 				tmpNodes.push_back(newNode);
 				endPointNodes[j]->childNode.push_back(newNode);
@@ -180,6 +193,24 @@ void getAllLinkListPointer(std::set<node*>& nodes, node* root) {
 	return;
 }
 
+void optimizationRedundent(node* currentNode) {
+	if (currentNode->childNode[0] == currentNode->childNode[1]) {
+		currentNode->rootNode.first->childNode[currentNode->rootNode.second] = currentNode->childNode[0];
+		delete currentNode;
+	}
+}
+
+void optimizationNodes(PLAdata data, node* root) {
+	using namespace std;
+
+	set<node*> nodes;
+	getAllLinkListPointer(nodes, root);
+
+	for (unsigned int i = data.element-1; i > 1; i--) for (auto& s : nodes) if (s->index == i) optimizationRedundent(s);
+	
+	return;
+}
+
 void generateDOTfile(PLAdata data, node* root, std::string dotName) {
 	using namespace std;
 
@@ -192,11 +223,6 @@ void generateDOTfile(PLAdata data, node* root, std::string dotName) {
 		};
 
 	auto printLine = [&](node* currentNode) -> void {
-		//if (currentNode->childNode[0]->terminal) {
-		//	for (unsigned int i = 0; i < currentNode->childNode.size(); i++) {
-		//		return;
-		//	}
-		//}
 		for (unsigned int i = 0; i < currentNode->childNode.size(); i++) {
 			cout << PADDING << currentNode->id << " -> " << currentNode->childNode[i]->id << "[label=\"" << i << "\", style=";
 			if (i == 0) cout << "dotted";
