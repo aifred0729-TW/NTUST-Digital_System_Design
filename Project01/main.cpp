@@ -28,7 +28,7 @@ void initialize(PLAdata& data);
 node* generateTerminalNode(node* lastNode);
 node* generateBDD(PLAdata data);
 void generateDOTfile(PLAdata data, node* root, std::string dotName);
-void applyPLAvalue(node* currentNode, std::string tree);
+void applyPLAvalue(node* &currentNode, std::string tree);
 
 int main() {
 	using namespace std;
@@ -37,11 +37,11 @@ int main() {
 	initialize(data);
 	
 	node* root = generateBDD(data);
-	generateDOTfile(data, root, "meow");
 	for (unsigned int i = 0; i < data.PLA.size(); i++) {
 		applyPLAvalue(root, data.PLA[i].first);
 	}
 
+	generateDOTfile(data, root, "meow");
 	return 0;
 }
 
@@ -130,7 +130,7 @@ node* generateBDD(PLAdata data) {
 	return root;
 }
 
-void applyPLAvalue(node* currentNode, std::string tree) {
+void applyPLAvalue(node* &currentNode, std::string tree) {
 	if (tree.size() == 1) {
 		switch (tree.c_str()[0]) {
 		case '-':
@@ -191,10 +191,18 @@ void generateDOTfile(PLAdata data, node* root, std::string dotName) {
 		cout << PADDING << id << " [label=\"" << element << "\"]" << endl;
 		};
 
-	auto printLine = [&](int src, int dst, bool zero) -> void {
-		cout << PADDING;
-		if (zero) cout << src << " -> " << dst << "[label=\"0\", style=dotted]" << endl;
-		else cout << src << " -> " << dst << "[label=\"1\", style=solid]" << endl;
+	auto printLine = [&](node* currentNode) -> void {
+		//if (currentNode->childNode[0]->terminal) {
+		//	for (unsigned int i = 0; i < currentNode->childNode.size(); i++) {
+		//		return;
+		//	}
+		//}
+		for (unsigned int i = 0; i < currentNode->childNode.size(); i++) {
+			cout << PADDING << currentNode->id << " -> " << currentNode->childNode[i]->id << "[label=\"" << i << "\", style=";
+			if (i == 0) cout << "dotted";
+			else cout << "solid";
+			cout << "]" << endl;
+		}
 		};
 
 	cout << "digraph " << dotName << " {" << endl;
@@ -216,20 +224,8 @@ void generateDOTfile(PLAdata data, node* root, std::string dotName) {
 	cout << PADDING << data.element * data.element << " [label=1, shape=box]" << endl << endl;
 
 	// Output Line
-	for (unsigned int i = 1; i < data.element-1; i++) {
-		for (auto& s : nodes) {
-			if (s->index == i) {
-				printLine(s->id, s->childNode[0]->id, true);
-				printLine(s->id, s->childNode[1]->id, false);
-			}
-		}
-	}
-	for (auto& s : nodes) {
-		if (s->index == data.element - 1) {
-			printLine(s->id, 0, true);
-			printLine(s->id, data.element * data.element, false);
-		}
-	}
+	for (unsigned int i = 1; i < data.element-1; i++) for (auto& s : nodes) if (s->index == i) printLine(s);
+	for (auto& s : nodes) if (s->index == data.element - 1) printLine(s);
 
 	cout << "}" << endl;
 
