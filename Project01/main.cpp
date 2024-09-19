@@ -9,7 +9,7 @@
 typedef struct {
 	unsigned int element;
 	unsigned int loadCount;
-	std::vector<std::pair<std::string, char>> PLA;
+	std::vector<std::pair<std::string, int>> PLA;
 } PLAdata;
 
 typedef struct node {
@@ -20,23 +20,27 @@ typedef struct node {
 	std::vector<struct node*> childNode;
 } node;
 
+node* zeroNode = new node();
+node* oneNode = new node();
+
 void readFile(PLAdata& data);
-node* generateTerminalNode(int element, node* lastNode);
+void initialize(PLAdata& data);
+node* generateTerminalNode(node* lastNode);
 node* generateBDD(PLAdata data);
 void generateDOTfile(PLAdata data, node* root, std::string dotName);
+void applyPLAvalue(node* currentNode, std::string tree);
 
 int main() {
 	using namespace std;
 	PLAdata data;
+
+	initialize(data);
 	
-	readFile(data);
-	cout << data.element << endl << data.loadCount << endl;
-	
-	for (unsigned int i = 0; i < data.loadCount; i++) {
-		cout << data.PLA[i].first << ' ' << data.PLA[i].second << endl;
-	}
 	node* root = generateBDD(data);
 	generateDOTfile(data, root, "meow");
+	for (unsigned int i = 0; i < data.PLA.size(); i++) {
+		applyPLAvalue(root, data.PLA[i].first);
+	}
 
 	return 0;
 }
@@ -46,7 +50,7 @@ void readFile(PLAdata &data) {
 
 	ifstream fp;
 	string loadS, tmp;
-	char loadC;
+	int loadI;
 
 	fp.open("test.txt");
 
@@ -56,8 +60,8 @@ void readFile(PLAdata &data) {
 	fp >> tmp >> tmp;
 	fp >> tmp >> data.loadCount;
 	for (unsigned int i = 0; i < data.loadCount; i++) {
-		fp >> loadS >> loadC;
-		data.PLA.push_back(pair<string, char>(loadS, loadC));
+		fp >> loadS >> loadI;
+		data.PLA.push_back(pair<string, int>(loadS, loadI));
 	}
 	fp >> tmp;
 
@@ -66,20 +70,26 @@ void readFile(PLAdata &data) {
 	return;
 }
 
-node* generateTerminalNode(int element, node* lastNode) {
+void initialize(PLAdata& data) {
+	readFile(data);
 
-	node* valueNodeL = new node();
-	valueNodeL->index = element;
-	valueNodeL->terminal = true;
-	valueNodeL->value = false;
+	zeroNode->id = 0;
+	zeroNode->value = false;
+	zeroNode->terminal = true;
+	zeroNode->index = data.element;
 
-	node* valueNodeR = new node();
-	valueNodeR->index = element;
-	valueNodeR->terminal = true;
-	valueNodeR->value = true;
+	oneNode->id = data.element * data.element;
+	oneNode->value = true;
+	oneNode->terminal = true;
+	oneNode->index = data.element;
 
-	lastNode->childNode.push_back(valueNodeL);
-	lastNode->childNode.push_back(valueNodeR);
+	return;
+}
+
+node* generateTerminalNode(node* lastNode) {
+
+	lastNode->childNode.push_back(zeroNode);
+	lastNode->childNode.push_back(oneNode);
 
 	return lastNode;
 }
@@ -114,17 +124,49 @@ node* generateBDD(PLAdata data) {
 	}
 
 	for (unsigned int i = 0; i < endPointNodes.size(); i++) {
-		endPointNodes[i] = generateTerminalNode(data.element, endPointNodes[i]);
+		endPointNodes[i] = generateTerminalNode(endPointNodes[i]);
 	}
 	
 	return root;
 }
 
-void applyPLAvalue(node* root, PLAdata data) {
-	for (unsigned int i = 0; i < data.loadCount; i++) {
-		
-		return;
+void applyPLAvalue(node* currentNode, std::string tree) {
+	if (tree.size() == 1) {
+		switch (tree.c_str()[0]) {
+		case '-':
+			currentNode->childNode[0] = oneNode;
+			currentNode->childNode[1] = oneNode;
+			return;
+		case '0':
+			currentNode->childNode[0] = oneNode;
+			return;
+		case '1':
+			currentNode->childNode[1] = oneNode;
+			return;
+		default:
+			return;
+		}
 	}
+
+	char nodeCondition = tree[0];
+	tree.erase(tree.begin(), tree.begin() + 1);
+
+	switch (nodeCondition) {
+	case '-':
+		applyPLAvalue(currentNode->childNode[0], tree);
+		applyPLAvalue(currentNode->childNode[1], tree);
+		break;
+	case '0':
+		applyPLAvalue(currentNode->childNode[0], tree);
+		break;
+	case '1':
+		applyPLAvalue(currentNode->childNode[1], tree);
+		break;
+	default:
+		break;
+	}
+
+	return;
 }
 
 void getAllLinkListPointer(std::set<node*>& nodes, node* root) {
