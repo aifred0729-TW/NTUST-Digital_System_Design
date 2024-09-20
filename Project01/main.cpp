@@ -188,21 +188,18 @@ void getAllLinkListPointer(std::set<node*>& nodes, node* root) {
 
 void rebindLinknlist(node* src, node* dst, node* mid, int srcBranch) {
 
-	auto removeRootNode = [&](node* dstNode, node* currentNode) {
-		dstNode->rootNode.erase(std::remove(
-			dstNode->rootNode.begin(),
-			dstNode->rootNode.end(), std::pair<node*, int>(currentNode, 0)),
-			dstNode->rootNode.end());
-
-		dstNode->rootNode.erase(std::remove(
-			dstNode->rootNode.begin(),
-			dstNode->rootNode.end(), std::pair<node*, int>(currentNode, 1)),
-			dstNode->rootNode.end());
-		};
-
 	src->childNode[srcBranch] = dst;
 	dst->rootNode.push_back(std::pair<node*, int>(src, srcBranch));
-	removeRootNode(dst, mid);
+
+	dst->rootNode.erase(std::remove(
+		dst->rootNode.begin(),
+		dst->rootNode.end(), std::pair<node*, int>(mid, 0)),
+		dst->rootNode.end());
+
+	dst->rootNode.erase(std::remove(
+		dst->rootNode.begin(),
+		dst->rootNode.end(), std::pair<node*, int>(mid, 1)),
+		dst->rootNode.end());
 
 	delete mid;
 	return;
