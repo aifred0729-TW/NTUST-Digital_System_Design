@@ -3,6 +3,7 @@
 #include <fstream>
 #include <vector>
 #include <set>
+#include <algorithm>
 
 #define PADDING "    "
 #define SPLITLINE "\n================================================\n\n"
