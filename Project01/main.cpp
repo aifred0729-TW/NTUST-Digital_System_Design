@@ -17,8 +17,8 @@ typedef struct node {
 	int index;
 	bool value;
 	bool terminal;
-	std::pair<node*, int> rootNode;
 	std::vector<struct node*> childNode;
+	std::vector<std::pair<node*, int>> rootNode;
 } node;
 
 node* zeroNode = new node();
@@ -30,7 +30,7 @@ node* generateTerminalNode(node* lastNode);
 node* generateBDD(PLAdata data);
 void generateDOTfile(PLAdata data, node* root, std::string dotName);
 void applyPLAvalue(node* &currentNode, std::string tree);
-void optimizationRedundent(node* currentNode);
+bool optimizationDoubleReference(node* currentNode);
 void optimizationNodes(PLAdata data, node* root);
 
 int main() {
@@ -82,15 +82,11 @@ void initialize(PLAdata& data) {
 	zeroNode->value = false;
 	zeroNode->terminal = true;
 	zeroNode->index = data.element;
-	zeroNode->rootNode.first = NULL;
-	zeroNode->rootNode.second = NULL;
 
 	oneNode->id = data.element * data.element;
 	oneNode->value = true;
 	oneNode->terminal = true;
 	oneNode->index = data.element;
-	oneNode->rootNode.first = NULL;
-	oneNode->rootNode.second = NULL;
 
 	return;
 }
@@ -110,8 +106,6 @@ node* generateBDD(PLAdata data) {
 
 	root->id = id;
 	root->index = 1;
-	root->rootNode.first = NULL;
-	root->rootNode.second = NULL;
 
 	endPointNodes.push_back(root);
 
@@ -125,8 +119,7 @@ node* generateBDD(PLAdata data) {
 				newNode->index = i;
 				newNode->value = NULL;
 				newNode->terminal = false;
-				newNode->rootNode.first = endPointNodes[j];
-				newNode->rootNode.second = k;
+				newNode->rootNode.push_back(std::pair<node*, int>(endPointNodes[j], k));
 
 				tmpNodes.push_back(newNode);
 				endPointNodes[j]->childNode.push_back(newNode);
@@ -193,20 +186,78 @@ void getAllLinkListPointer(std::set<node*>& nodes, node* root) {
 	return;
 }
 
-void optimizationRedundent(node* currentNode) {
-	if (currentNode->childNode[0] == currentNode->childNode[1]) {
-		currentNode->rootNode.first->childNode[currentNode->rootNode.second] = currentNode->childNode[0];
-		delete currentNode;
+void rebindLinknlist(node* src, node* dst, node* mid, int srcBranch) {
+
+	auto removeRootNode = [&](node* dstNode, node* currentNode) {
+		dstNode->rootNode.erase(std::remove(
+			dstNode->rootNode.begin(),
+			dstNode->rootNode.end(), std::pair<node*, int>(currentNode, 0)),
+			dstNode->rootNode.end());
+
+		dstNode->rootNode.erase(std::remove(
+			dstNode->rootNode.begin(),
+			dstNode->rootNode.end(), std::pair<node*, int>(currentNode, 1)),
+			dstNode->rootNode.end());
+		};
+
+	src->childNode[srcBranch] = dst;
+	dst->rootNode.push_back(std::pair<node*, int>(src, srcBranch));
+	removeRootNode(dst, mid);
+
+	delete mid;
+	return;
+}
+
+node* getRootNode(node* currentNode) {
+	return currentNode->rootNode[0].first;
+}
+
+int getRootBranch(node* currentNode) {
+	return currentNode->rootNode[0].second;
+}
+
+node* getChildNode(node* currentNode, int branch) {
+	return currentNode->childNode[branch];
+}
+
+bool optimizationDoubleReference(node* caseNode) {
+
+	if (getChildNode(caseNode, 0) == getChildNode(caseNode, 1)) {
+		rebindLinknlist(getRootNode(caseNode), getChildNode(caseNode, 0), caseNode, getRootBranch(caseNode));
+		return true;
 	}
+	return false;
+}
+
+void optimizationRedundent(std::vector<node*> nodes) {
+
+	while (nodes.size() >= 2) {
+		for (unsigned int i = 1; i < nodes.size(); i++) {
+			if (getChildNode(nodes[0], 0) == getChildNode(nodes[i], 0) &&
+				getChildNode(nodes[0], 1) == getChildNode(nodes[i], 1)) {
+				rebindLinknlist(getRootNode(nodes[i]), getChildNode(nodes[0], 0), nodes[i], getRootBranch(nodes[i]));
+				nodes.erase(nodes.begin() + i);
+				i--;
+			}
+		}
+		nodes.erase(nodes.begin(), nodes.begin() + 1);
+	}
+	return;
 }
 
 void optimizationNodes(PLAdata data, node* root) {
 	using namespace std;
 
 	set<node*> nodes;
+	vector<node*> sameLevelNodes;
+
 	getAllLinkListPointer(nodes, root);
 
-	for (unsigned int i = data.element-1; i > 1; i--) for (auto& s : nodes) if (s->index == i) optimizationRedundent(s);
+	for (unsigned int i = data.element - 1; i > 1; i--) {
+		for (auto& s : nodes) if (s->index == i) if (!optimizationDoubleReference(s)) sameLevelNodes.push_back(s);
+		optimizationRedundent(sameLevelNodes);
+		sameLevelNodes.clear();
+	}
 	
 	return;
 }
@@ -224,7 +275,7 @@ void generateDOTfile(PLAdata data, node* root, std::string dotName) {
 
 	auto printLine = [&](node* currentNode) -> void {
 		for (unsigned int i = 0; i < currentNode->childNode.size(); i++) {
-			cout << PADDING << currentNode->id << " -> " << currentNode->childNode[i]->id << "[label=\"" << i << "\", style=";
+			cout << PADDING << currentNode->id << " -> " << getChildNode(currentNode, i)->id << "[label=\"" << i << "\", style=";
 			if (i == 0) cout << "dotted";
 			else cout << "solid";
 			cout << "]" << endl;
