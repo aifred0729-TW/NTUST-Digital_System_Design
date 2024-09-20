@@ -187,19 +187,24 @@ void getAllLinkListPointer(std::set<node*>& nodes, node* root) {
 }
 
 void rebindLinknlist(node* src, node* dst, node* mid, int srcBranch) {
+	using namespace std;
+	
+	cout << "[+] Rebind " << src->id << ":" << srcBranch << " to " << dst->id << " and destory " << mid->id << endl;
 
 	src->childNode[srcBranch] = dst;
-	dst->rootNode.push_back(std::pair<node*, int>(src, srcBranch));
 
-	dst->rootNode.erase(std::remove(
+	dst->rootNode.erase(std::remove_if(
 		dst->rootNode.begin(),
-		dst->rootNode.end(), std::pair<node*, int>(mid, 0)),
+		dst->rootNode.end(),
+		[mid](const std::pair<node*, int>& p) { return p.first == mid && p.second == 0; }),
 		dst->rootNode.end());
 
-	dst->rootNode.erase(std::remove(
+	dst->rootNode.erase(std::remove_if(
 		dst->rootNode.begin(),
-		dst->rootNode.end(), std::pair<node*, int>(mid, 1)),
+		dst->rootNode.end(),
+		[mid](const std::pair<node*, int>& p) { return p.first == mid && p.second == 1; }),
 		dst->rootNode.end());
+
 
 	delete mid;
 	return;
@@ -232,7 +237,7 @@ void optimizationRedundent(std::vector<node*> nodes) {
 		for (unsigned int i = 1; i < nodes.size(); i++) {
 			if (getChildNode(nodes[0], 0) == getChildNode(nodes[i], 0) &&
 				getChildNode(nodes[0], 1) == getChildNode(nodes[i], 1)) {
-				rebindLinknlist(getRootNode(nodes[i]), getChildNode(nodes[0], 0), nodes[i], getRootBranch(nodes[i]));
+				rebindLinknlist(getRootNode(nodes[i]), nodes[0], nodes[i], getRootBranch(nodes[i]));
 				nodes.erase(nodes.begin() + i);
 				i--;
 			}
