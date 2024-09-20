@@ -5,6 +5,7 @@
 #include <set>
 
 #define PADDING "    "
+#define SPLITLINE "\n================================================\n\n"
 
 typedef struct {
 	unsigned int element;
@@ -21,9 +22,6 @@ typedef struct node {
 	std::vector<std::pair<node*, int>> rootNode;
 } node;
 
-node* zeroNode = new node();
-node* oneNode = new node();
-
 void readFile(PLAdata& data);
 void initialize(PLAdata& data);
 node* generateTerminalNode(node* lastNode);
@@ -33,20 +31,41 @@ void applyPLAvalue(node* &currentNode, std::string tree);
 bool optimizationDoubleReference(node* currentNode);
 void optimizationNodes(PLAdata data, node* root);
 
-int main() {
+node* zeroNode = new node();
+node* oneNode = new node();
+bool verbose = new bool;
+
+int main(int argc, char* argv[]) {
 	using namespace std;
 	PLAdata data;
+
+	if (argc > 2) if (argv[1] == "-v") verbose = true; 
+	else verbose = false;
+
+	if (verbose) cout << "[+] Verbose Mode for Debugging" << endl;
 
 	initialize(data);
 	
 	node* root = generateBDD(data);
+
+	if (verbose) cout << SPLITLINE << "[+] Apply PLA data to Binary Tree Linklist Nodes\n\n";
+
 	for (unsigned int i = 0; i < data.PLA.size(); i++) {
+		if (verbose) cout << "[+] -------- Apply series " << i << " PLA data \"" << data.PLA[i].first << "\" --------\n";
 		applyPLAvalue(root, data.PLA[i].first);
 	}
 
+	if (verbose) cout << "\n[+] Success Apply PLA data on Binary Tree Linklist Nodes\n";
+	if (verbose) cout << SPLITLINE << "[+] Optimization Binary Tree Linklist Nodes\n\n";
+
 	optimizationNodes(data, root);
 
+	if (verbose) cout << SPLITLINE << "[+] Starting generate dot file\n\n";
+
 	generateDOTfile(data, root, "meow");
+
+	if (verbose) cout << SPLITLINE;
+
 	return 0;
 }
 
@@ -94,7 +113,7 @@ void initialize(PLAdata& data) {
 node* generateTerminalNode(node* lastNode) {
 
 	lastNode->childNode.push_back(zeroNode);
-	lastNode->childNode.push_back(oneNode);
+	lastNode->childNode.push_back(zeroNode);
 
 	return lastNode;
 }
@@ -138,15 +157,19 @@ node* generateBDD(PLAdata data) {
 
 void applyPLAvalue(node* &currentNode, std::string tree) {
 	if (tree.size() == 1) {
+		if (verbose) printf("[+] Apply TRUE value on node %2d:", currentNode->id);
 		switch (tree.c_str()[0]) {
 		case '-':
+			if (verbose) printf("A\n");
 			currentNode->childNode[0] = oneNode;
 			currentNode->childNode[1] = oneNode;
 			return;
 		case '0':
+			if (verbose) printf("0\n");
 			currentNode->childNode[0] = oneNode;
 			return;
 		case '1':
+			if (verbose) printf("1\n");
 			currentNode->childNode[1] = oneNode;
 			return;
 		default:
@@ -186,10 +209,26 @@ void getAllLinkListPointer(std::set<node*>& nodes, node* root) {
 	return;
 }
 
-void rebindLinknlist(node* src, node* dst, node* mid, int srcBranch) {
+node* getRootNode(node* currentNode) {
+	return currentNode->rootNode[0].first;
+}
+
+int getRootBranch(node* currentNode) {
+	return currentNode->rootNode[0].second;
+}
+
+node* getChildNode(node* currentNode, int branch) {
+	return currentNode->childNode[branch];
+}
+
+void rebindLinknlist(node* src, node* dst, node* mid, int srcBranch, int type) {
 	using namespace std;
 	
-	cout << "[+] Rebind " << src->id << ":" << srcBranch << " to " << dst->id << " and destory " << mid->id << endl;
+	if (verbose) {
+		printf("[+] Rebind %2d:%d to %2d and destory %2d - ", src->id, srcBranch, dst->id, mid->id);
+		if (type == 0) printf("Found DoubleRef nodes on node %2d to %2d\n", mid->id, getChildNode(mid, 0)->id);
+		else if (type == 1) printf("Found Redundent nodes on node %2d pointer to node %2d and node %2d\n", mid->id, getChildNode(mid, 0)->id, getChildNode(mid, 1)->id);
+	}
 
 	src->childNode[srcBranch] = dst;
 
@@ -210,22 +249,10 @@ void rebindLinknlist(node* src, node* dst, node* mid, int srcBranch) {
 	return;
 }
 
-node* getRootNode(node* currentNode) {
-	return currentNode->rootNode[0].first;
-}
-
-int getRootBranch(node* currentNode) {
-	return currentNode->rootNode[0].second;
-}
-
-node* getChildNode(node* currentNode, int branch) {
-	return currentNode->childNode[branch];
-}
-
 bool optimizationDoubleReference(node* caseNode) {
 
 	if (getChildNode(caseNode, 0) == getChildNode(caseNode, 1)) {
-		rebindLinknlist(getRootNode(caseNode), getChildNode(caseNode, 0), caseNode, getRootBranch(caseNode));
+		rebindLinknlist(getRootNode(caseNode), getChildNode(caseNode, 0), caseNode, getRootBranch(caseNode), 0);
 		return true;
 	}
 	return false;
@@ -237,9 +264,8 @@ void optimizationRedundent(std::vector<node*> nodes) {
 		for (unsigned int i = 1; i < nodes.size(); i++) {
 			if (getChildNode(nodes[0], 0) == getChildNode(nodes[i], 0) &&
 				getChildNode(nodes[0], 1) == getChildNode(nodes[i], 1)) {
-				rebindLinknlist(getRootNode(nodes[i]), nodes[0], nodes[i], getRootBranch(nodes[i]));
-				nodes.erase(nodes.begin() + i);
-				i--;
+				rebindLinknlist(getRootNode(nodes[i]), nodes[0], nodes[i], getRootBranch(nodes[i]), 1);
+				nodes.erase(nodes.begin() + i); i--;
 			}
 		}
 		nodes.erase(nodes.begin(), nodes.begin() + 1);
@@ -256,10 +282,13 @@ void optimizationNodes(PLAdata data, node* root) {
 	getAllLinkListPointer(nodes, root);
 
 	for (unsigned int i = data.element - 1; i > 1; i--) {
+		if (verbose) cout << "[+] -------- Optimization Layer " << i << " Nodes --------\n";
 		for (auto& s : nodes) if (s->index == i) if (!optimizationDoubleReference(s)) sameLevelNodes.push_back(s);
 		optimizationRedundent(sameLevelNodes);
 		sameLevelNodes.clear();
 	}
+
+	if (verbose) cout << "\n[+] Success optimization\n";
 	
 	return;
 }
