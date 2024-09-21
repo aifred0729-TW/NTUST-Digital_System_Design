@@ -7,6 +7,16 @@
 
 #define PADDING "    "
 #define SPLITLINE "\n================================================\n\n"
+#define HELP \
+R"(
+- ROBDD Generator by Red / B11215013
+
+Usage : Project1.exe {PLA file} {output file} {options}
+
+Options: 
+  -v / Verbose Mode
+
+)"
 
 typedef struct {
 	unsigned int element;
@@ -35,13 +45,19 @@ void optimizationNodes(PLAdata data, node* root);
 node* zeroNode = new node();
 node* oneNode = new node();
 bool verbose = new bool;
+std::string PLA_FILE = "";
+std::string DOT_FILE = "";
 
 int main(int argc, char* argv[]) {
 	using namespace std;
 	PLAdata data;
+	verbose = false;
 
-	if (argc > 2) if (argv[1] == "-v") verbose = true; 
-	else verbose = false;
+	if (argc < 3) { cout << HELP; return 1; }
+	if (argc == 4) verbose = true;
+
+	PLA_FILE = argv[1];
+	DOT_FILE = argv[2];
 
 	if (verbose) cout << "[+] Verbose Mode for Debugging" << endl;
 
@@ -77,7 +93,7 @@ void readFile(PLAdata &data) {
 	string loadS, tmp;
 	int loadI;
 
-	fp.open("test.txt");
+	fp.open(PLA_FILE);
 
 	fp >> tmp >> data.element;
 	fp >> tmp >> data.loadCount;
@@ -92,6 +108,13 @@ void readFile(PLAdata &data) {
 
 	data.element++;
 
+	return;
+}
+
+void writeFile(std::string buffer) {
+	std::ofstream outFile(DOT_FILE);
+	outFile << buffer;
+	outFile.close();
 	return;
 }
 
@@ -297,46 +320,76 @@ void optimizationNodes(PLAdata data, node* root) {
 void generateDOTfile(PLAdata data, node* root, std::string dotName) {
 	using namespace std;
 
-	auto printLayout = [&](string id) -> void {
-		cout << PADDING << "{rank=same" << id << "}" << endl;
+	auto printLayout = [&](string id) -> string {
+		string buffer = "";
+		buffer += PADDING;
+		buffer += "{rank=same";
+		buffer += id;
+		buffer += "}\n";
+		return buffer;
 		};
 
-	auto printElement = [&](int id, char element) -> void {
-		cout << PADDING << id << " [label=\"" << element << "\"]" << endl;
+	auto printElement = [&](int id, char element) -> string {
+		string buffer = "";
+		buffer += PADDING;
+		buffer += to_string(id);
+		buffer += " [label=\"";
+		buffer += to_string(element);
+		buffer += "\"]\n";
+		return buffer;
 		};
 
-	auto printLine = [&](node* currentNode) -> void {
+	auto printLine = [&](node* currentNode) -> string {
+		string buffer = "";
 		for (unsigned int i = 0; i < currentNode->childNode.size(); i++) {
-			cout << PADDING << currentNode->id << " -> " << getChildNode(currentNode, i)->id << "[label=\"" << i << "\", style=";
-			if (i == 0) cout << "dotted";
-			else cout << "solid";
-			cout << "]" << endl;
-		}
-		};
+			buffer += PADDING;
+			buffer += to_string(currentNode->id);
+			buffer += " -> ";
+			buffer += to_string(getChildNode(currentNode, i)->id);
+			buffer += "[label=\"";
+			buffer += to_string(i);
+			buffer += "\", style=";
 
-	cout << "digraph " << dotName << " {" << endl;
+			if (i == 0) buffer += "dotted";
+			else buffer += "solid";
+			
+			buffer += "]\n";
+		}
+		return buffer;
+		};
 
 	string id;
+	string buffer = "";
 	set<node*> nodes;
 	getAllLinkListPointer(nodes, root);
+
+	buffer += "digraph ";
+	buffer += dotName;
+	buffer += " {\n";
 
 	// Output Layout
 	for (unsigned int i = 1; i < data.element; i++) {
 		for (auto& s : nodes) if (s->index == i) id = id + " " + to_string(s->id);
-		printLayout(id);
+		buffer += printLayout(id);
 		id = "";
 	} cout << endl;
 
 	// Output Element
-	for (unsigned int i = 1; i < data.element; i++) for (auto& s : nodes) if (s->index == i) printElement(s->id, 96 + s->index);
-	cout << PADDING << "0 [label=0, shape=box]" << endl;
-	cout << PADDING << data.element * data.element << " [label=1, shape=box]" << endl << endl;
+	for (unsigned int i = 1; i < data.element; i++) for (auto& s : nodes) if (s->index == i) buffer += printElement(s->id, 96 + s->index);
+	buffer = buffer + PADDING + "0 [label=0, shape=box]\n";
+	buffer += PADDING;
+	buffer += to_string(data.element * data.element);
+	buffer += " [label=1, shape=box]\n\n";
 
 	// Output Line
-	for (unsigned int i = 1; i < data.element-1; i++) for (auto& s : nodes) if (s->index == i) printLine(s);
-	for (auto& s : nodes) if (s->index == data.element - 1) printLine(s);
+	for (unsigned int i = 1; i < data.element-1; i++) for (auto& s : nodes) if (s->index == i) buffer += printLine(s);
+	for (auto& s : nodes) if (s->index == data.element - 1) buffer += printLine(s);
 
-	cout << "}" << endl;
+	buffer += "}\n";
+
+	cout << buffer;
+
+	writeFile(buffer);
 
 	return;
 }
