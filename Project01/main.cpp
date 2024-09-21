@@ -7,16 +7,14 @@
 
 #define PADDING "    "
 #define SPLITLINE "\n================================================\n\n"
-#define HELP \
-R"(
-- ROBDD Generator by Red / B11215013
-
-Usage : Project1.exe {PLA file} {output file} {options}
-
-Options: 
-  -v / Verbose Mode
-
-)"
+#define HELP "\n\
+- ROBDD Generator by Red / B11215013\n\
+\n\
+Usage : Project1.exe {PLA file} {output file} {options}\n\
+\n\
+Options:\n\
+  -v / Verbose Mode\n\
+\n"
 
 typedef struct {
 	unsigned int element;
