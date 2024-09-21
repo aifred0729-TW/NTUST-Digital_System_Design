@@ -332,7 +332,7 @@ void generateDOTfile(PLAdata data, node* root, std::string dotName) {
 		buffer += PADDING;
 		buffer += to_string(id);
 		buffer += " [label=\"";
-		buffer += to_string(element);
+		buffer += element;
 		buffer += "\"]\n";
 		return buffer;
 		};
