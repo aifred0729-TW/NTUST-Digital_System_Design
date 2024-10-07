@@ -178,6 +178,10 @@ node* generateBDD(PLAdata data) {
 }
 
 void applyPLAvalue(node* &currentNode, std::string tree) {
+
+
+	// modify this PLA value parser on 48 hours
+
 	if (tree.size() == 1) {
 		if (verbose) printf("[+] Apply TRUE value on node %2d:", currentNode->id);
 		switch (tree.c_str()[0]) {
