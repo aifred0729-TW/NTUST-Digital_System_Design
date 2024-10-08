@@ -13,7 +13,7 @@ typedef struct {
     std::vector<std::pair<std::string, char>> PLA;
 } PLAdata;
 
-typedef std::vector<std::pair<std::string, int>> expanedBF;
+typedef std::vector<std::pair<std::string, std::vector<int>>> expanedBF;
 
 void readFile(PLAdata& data) {
     using namespace std;
@@ -40,23 +40,20 @@ void readFile(PLAdata& data) {
     return;
 }
 
-void expendPLADontCare(expanedBF& data, std::string booleanFunction, int index) {
+void expendPLADontCare(expanedBF& data, std::string booleanFunction, int index, int isDontCare) {
 
     if (index == booleanFunction.size()) {
-        data.push_back(std::pair<std::string, int>(booleanFunction, -1));
+        data.push_back(std::pair<std::string, std::vector<int>>(booleanFunction, { 0, isDontCare }));
         return;
     }
 
-    switch (booleanFunction[index]) {
-    case '-':
+    if (booleanFunction[index] == '-') {
         booleanFunction[index] = '0';
-        expendPLADontCare(data, booleanFunction, index+1);
+        expendPLADontCare(data, booleanFunction, index + 1, isDontCare);
         booleanFunction[index] = '1';
-        expendPLADontCare(data, booleanFunction, index+1);
-        return;
-    default:
-        expendPLADontCare(data, booleanFunction, index+1);
-        return;
+        expendPLADontCare(data, booleanFunction, index + 1, isDontCare);
+    } else {
+        expendPLADontCare(data, booleanFunction, index+1, isDontCare);
     }
 
     return;
@@ -64,7 +61,12 @@ void expendPLADontCare(expanedBF& data, std::string booleanFunction, int index) 
 
 
 void expandBooleanFunction(PLAdata data, expanedBF& initializeBF) {
-    for (unsigned int i = 0; i < data.loadCount; i++) if (data.PLA[i].second == '1') expendPLADontCare(initializeBF, data.PLA[i].first, 0);
+    for (unsigned int i = 0; i < data.loadCount; i++) {
+        if (data.PLA[i].second == '1') expendPLADontCare(initializeBF, data.PLA[i].first, 0, 0);
+        if (data.PLA[i].second == '-') expendPLADontCare(initializeBF, data.PLA[i].first, 0, 1);
+    }
+    for (unsigned int i = 0; i < initializeBF.size(); i++) initializeBF[i].second[0] = std::stoi(initializeBF[i].first, nullptr, 2);
+    for (unsigned int i = initializeBF.size()-1; i > 0; i--) for (unsigned int j = 0; j < i; j++) if (initializeBF[j].second > initializeBF[j + 1].second) std::swap(initializeBF[j], initializeBF[j + 1]);
     return;
 }
 
