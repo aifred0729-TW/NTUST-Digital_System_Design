@@ -194,30 +194,30 @@ std::vector<term> getEssentialPrimeImplicant(std::vector<term> initTerm, std::ve
     using namespace std;
 
     vector<term> EPI;
-    vector<vector<bool>> tableEPI;
-
-    tableEPI.resize(PI.size());
-
-    for (unsigned int i = 0; i < tableEPI.size(); i++) {
-        tableEPI[i].resize(initTerm.size());
-    }
 
     for (unsigned int i = 0; i < PI.size(); i++) {
-        for (unsigned int j = 0; j < initTerm.size(); i++) {
-            for (unsigned int k = 0; k < PI[i].booleanFunc.size(); k++) {
-                if (PI[i].isInTerm(initTerm[i])) tableEPI[i][j] = true;
+        for (unsigned int j = 0; j < PI[i].mN.size(); j++) {
+            for (unsigned int k = 0; k < initTerm.size(); k++) {
+                if (PI[i].mN[j] == initTerm[k].mN[0] && initTerm[k].isDontCare) {
+                    PI[i].mN.erase(PI.begin() + j)
+                }
             }
         }
     }
 
+
+    // [Index of mN, count]
     vector<pair<int, int>> result;
 
     for (unsigned int i = 0; i < initTerm.size(); i++) {
         int count = 0;
         for (unsigned int j = 0; j < PI.size(); j++) {
-            if (tableEPI[i][j]);
+            if (tableEPI[i][j]) count++;
         }
+        result.push_back(pair<int, int>(initTerm[i].mN[0], count));
     }
+
+    printf("%d", result.size());
 
     return EPI;
 }
