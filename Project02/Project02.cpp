@@ -5,7 +5,17 @@
 #include <set>
 #include <algorithm>
 
+#define PADDING "    "
+#define SPLITLINE "\n================================================\n\n"
+#define HELP "\n\
+- Project 2 by Red / B11215013\n\
+\n\
+Usage : Project2.exe {PLA file} {output file}\n\
+\n"
+
+
 std::string PLA_FILE = "";
+std::string OUT_FILE = "";
 
 typedef struct {
     unsigned int element;
@@ -355,11 +365,53 @@ std::vector<term> runPetrickMethod(std::vector<term> EPI, std::vector<term> last
     return result;
 }
 
-int main() {
+std::string buildResultBuffer(std::vector<term> result) {
+
+    std::string buffer = "";
+
+    buffer += ".i ";
+    buffer += std::to_string(result.size());
+    buffer += '\n';
+    buffer += ".o 1\n";
+    buffer += ".lib";
+
+    for (unsigned int i = 0; i < result[0].booleanFunc.size(); i++) {
+        buffer += " ";
+        buffer += 'a' + i;
+    }
+
+    buffer += '\n';
+    buffer += ".ob f\n";
+    buffer += ".p ";
+    buffer += std::to_string(result.size());
+    buffer += '\n';
+
+    for (unsigned int i = 0; i < result.size(); i++) {
+        buffer += result[i].booleanFunc;
+        buffer += " 1\n";
+    }
+
+    buffer += ".e\n";
+
+    return buffer;
+}
+
+void writeFile(std::string buffer, std::string filename) {
+    std::ofstream outFile("output.pla");
+    outFile << buffer;
+    outFile.close();
+    return;
+}
+
+int main(int argc, char* argv[]) {
     using namespace std;
 
+    if (argc < 3) { cout << HELP; return 1; }
+
     PLAdata data;
-    PLA_FILE = "test.pla";
+
+    PLA_FILE = argv[1];
+    OUT_FILE = argv[2];
 
     readFile(data);
 
@@ -371,6 +423,8 @@ int main() {
     vector<int> lastTermIndex = getLastTermIndex(normalTermIndex, EPI);
     vector<term> lastPI = getLastPrimeImplicant(PI, EPI);
     vector<term> result = runPetrickMethod(EPI, lastPI, lastTermIndex);
+
+    writeFile(buildResultBuffer(result), OUT_FILE);
 
     return 0;
 }
