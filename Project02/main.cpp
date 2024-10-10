@@ -236,7 +236,16 @@ std::vector<term> mergeBooleanFunctions(std::vector<term> initBF, std::vector<in
 
         cout << "[+] Stored Prime Implicant : " << primeImplicant.size() << endl;
 
-        if (finalRound) return primeImplicant;
+        if (finalRound) {
+
+            for (size_t i = 0; i < primeImplicant.size()-1; i++) {
+                for (size_t j = i + 1; j < primeImplicant.size(); j++) {
+                    if (primeImplicant[i].booleanFunc == primeImplicant[j].booleanFunc) primeImplicant.erase(primeImplicant.begin() + j);
+                }
+            }
+
+            return primeImplicant;
+        }
 
         groupedBF.clear();
         groupBooleanFunctions(stageBF, groupedBF);
