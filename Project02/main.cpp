@@ -248,18 +248,23 @@ std::vector<term> getEssentialPrimeImplicant(std::vector<int> index, std::vector
     using namespace std;
 
     vector<term> EPI;
-    vector<vector<int>> EPItable;
-    EPItable.resize(index.size());
+    vector<int> EPItable;
 
 
     for (unsigned int i = 0; i < index.size(); i++) {
         for (unsigned int j = 0; j < PI.size(); j++) {
-            if (PI[j].isInIndex(index[i])) EPItable[i].push_back(j);
+            if (PI[j].isInIndex(index[i])) {
+                EPItable.push_back(j);
+            }
         }
+        if (EPItable.size() == 1) EPI.push_back(PI[EPItable[0]]);
+        EPItable.clear();
     }
 
-    for (unsigned int i = 0; i < EPItable.size(); i++) {
-        if (EPItable[i].size() == 1) EPI.push_back(PI[EPItable[i][0]]);
+    for (size_t i = 0; i < EPI.size()-1; i++) {
+        for (size_t j = i + 1; j < EPI.size(); j++) {
+            if (EPI[i].booleanFunc == EPI[j].booleanFunc) EPI.erase(EPI.begin() + j);
+        }
     }
 
     return EPI;
@@ -403,15 +408,29 @@ void writeFile(std::string buffer, std::string filename) {
     return;
 }
 
+void outputTerms(std::vector<term> terms, std::string title) {
+    printf("%s", title.c_str());
+    for (size_t i = 0; i < terms.size(); i++) {
+        printf("> %s | ", terms[i].booleanFunc.c_str());
+        for (size_t j = 0; j < terms[i].mN.size(); j++) {
+            printf("m%d ", terms[i].mN[j]);
+        }
+        printf("\n");
+    }
+
+}
+
 int main(int argc, char* argv[]) {
     using namespace std;
 
-    if (argc < 3) { cout << HELP; return 1; }
+    //if (argc < 3) { cout << HELP; return 1; }
 
     PLAdata data;
 
-    PLA_FILE = argv[1];
-    OUT_FILE = argv[2];
+    //PLA_FILE = argv[1];
+    PLA_FILE = "test.pla";
+    //OUT_FILE = argv[2];
+    OUT_FILE = "test.out";
 
     readFile(data);
 
@@ -419,10 +438,25 @@ int main(int argc, char* argv[]) {
     vector<int> dontCareIndex = getDontCareTerms(initTerm);
     vector<int> normalTermIndex = getNormalTermIndex(initTerm);
     vector<term> PI = mergeBooleanFunctions(initTerm, dontCareIndex);
+
+    outputTerms(PI, "========== Prime Implicant ==========\n");
+
     vector<term> EPI = getEssentialPrimeImplicant(normalTermIndex, PI);
+
+    outputTerms(EPI, "========== Essential Prime Implicant ==========\n");
+
+
     vector<int> lastTermIndex = getLastTermIndex(normalTermIndex, EPI);
-    vector<term> lastPI = getLastPrimeImplicant(PI, EPI);
-    vector<term> result = runPetrickMethod(EPI, lastPI, lastTermIndex);
+
+    vector<term> result;
+
+    if (lastTermIndex.size() != 0) {
+        vector<term> lastPI = getLastPrimeImplicant(PI, EPI);
+        result = runPetrickMethod(EPI, lastPI, lastTermIndex);
+    }
+    else {
+        result = EPI;
+    }
 
     writeFile(buildResultBuffer(result), OUT_FILE);
 
