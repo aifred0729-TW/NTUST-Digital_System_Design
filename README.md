@@ -32,7 +32,7 @@ Usage
 Usage : Project2.exe {PLA file} {output file}
 
 Example :
-Project02 .pla example.dot -v
+Project02.pla case1.pla case1Out.pla
 ```
 
 Compile on Windows  
