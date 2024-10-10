@@ -423,14 +423,12 @@ void outputTerms(std::vector<term> terms, std::string title) {
 int main(int argc, char* argv[]) {
     using namespace std;
 
-    //if (argc < 3) { cout << HELP; return 1; }
+    if (argc < 3) { cout << HELP; return 1; }
 
     PLAdata data;
 
-    //PLA_FILE = argv[1];
-    PLA_FILE = "test.pla";
-    //OUT_FILE = argv[2];
-    OUT_FILE = "test.out";
+    PLA_FILE = argv[1];
+    OUT_FILE = argv[2];
 
     readFile(data);
 
