@@ -397,7 +397,7 @@ std::string buildResultBuffer(std::vector<term> result) {
 }
 
 void writeFile(std::string buffer, std::string filename) {
-    std::ofstream outFile("output.pla");
+    std::ofstream outFile(filename);
     outFile << buffer;
     outFile.close();
     return;
