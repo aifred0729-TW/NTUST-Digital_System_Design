@@ -17,7 +17,6 @@ class term {
 public:
     std::string booleanFunc = "";
     std::vector<int> mN;
-    std::vector<int> dontCareIndex;
     bool isDontCare = false;
     bool optimized = false;
 
@@ -33,6 +32,17 @@ public:
             if (booleanFunc[i] != initTerm.booleanFunc[i]) return false;
         }
         return true;
+    }
+
+    bool isInIndex(int index) {
+        for (unsigned int i = 0; i < mN.size(); i++) {
+            if (mN[i] == index) return true;
+        }
+        return false;
+    }
+
+    bool operator<(const term& otherTerm) const {
+        return booleanFunc < otherTerm.booleanFunc;
     }
 };
 
@@ -96,7 +106,32 @@ std::vector<term> expandBooleanFunction(PLAdata data) {
             if (initTerm[j].mN[0] > initTerm[j + 1].mN[0]) std::swap(initTerm[j], initTerm[j + 1]);
         }
     }
+
+    for (unsigned int i = 0; i < initTerm.size()-1; i++) {
+        if (initTerm[i].booleanFunc == initTerm[i + 1].booleanFunc) initTerm.erase(initTerm.begin() + i);
+    }
+
     return initTerm;
+}
+
+std::vector<int> getDontCareTerms(std::vector<term> bf) {
+    using namespace std;
+
+    vector<int> dontCareIndex;
+
+    for (unsigned int i = 0; i < bf.size(); i++) {
+        if (bf[i].isDontCare) dontCareIndex.push_back(bf[i].mN[0]);
+    }
+
+    return dontCareIndex;
+}
+
+std::vector<int> getNormalTermIndex(std::vector<term> bf) {
+    std::vector<int> index;
+    for (unsigned int i = 0; i < bf.size(); i++) {
+        if (!bf[i].isDontCare) index.push_back(bf[i].mN[0]);
+    }
+    return index;
 }
 
 void groupBooleanFunctions(std::vector<term> bf, std::vector<std::vector<term>>& groupedBF) {
@@ -116,7 +151,12 @@ void groupBooleanFunctions(std::vector<term> bf, std::vector<std::vector<term>>&
     return;
 }
 
-std::vector<term> mergeBooleanFunctions(std::vector<term> initBF) {
+bool checkIsDontCareIndex(int index, std::vector<int> dontCareIndex) {
+    for (unsigned int i = 0; i < dontCareIndex.size(); i++) if (index == dontCareIndex[i]) return true;
+    return false;
+}
+
+std::vector<term> mergeBooleanFunctions(std::vector<term> initBF, std::vector<int> dontCareIndex) {
     using namespace std;
     
     vector<term> stageBF;
@@ -175,7 +215,11 @@ std::vector<term> mergeBooleanFunctions(std::vector<term> initBF) {
                     finalRound = false;
                 }
                 else {
-                    primeImplicant.push_back(groupedBF[i][j]);
+                    for (unsigned int a = 0; a < groupedBF[i][j].mN.size(); a++) {
+                        if (checkIsDontCareIndex(groupedBF[i][j].mN[a], dontCareIndex)) continue;
+                        primeImplicant.push_back(groupedBF[i][j]);
+                        break;
+                    }
                 }
             }
         }
@@ -190,36 +234,125 @@ std::vector<term> mergeBooleanFunctions(std::vector<term> initBF) {
     }
 }
 
-std::vector<term> getEssentialPrimeImplicant(std::vector<term> initTerm, std::vector<term> PI) {
+std::vector<term> getEssentialPrimeImplicant(std::vector<int> index, std::vector<term> PI) {
     using namespace std;
 
     vector<term> EPI;
+    vector<vector<int>> EPItable;
+    EPItable.resize(index.size());
 
-    for (unsigned int i = 0; i < PI.size(); i++) {
-        for (unsigned int j = 0; j < PI[i].mN.size(); j++) {
-            for (unsigned int k = 0; k < initTerm.size(); k++) {
-                if (PI[i].mN[j] == initTerm[k].mN[0] && initTerm[k].isDontCare) {
-                    PI[i].mN.erase(PI.begin() + j)
-                }
+
+    for (unsigned int i = 0; i < index.size(); i++) {
+        for (unsigned int j = 0; j < PI.size(); j++) {
+            if (PI[j].isInIndex(index[i])) EPItable[i].push_back(j);
+        }
+    }
+
+    for (unsigned int i = 0; i < EPItable.size(); i++) {
+        if (EPItable[i].size() == 1) EPI.push_back(PI[EPItable[i][0]]);
+    }
+
+    return EPI;
+}
+
+std::vector<int> getLastTermIndex(std::vector<int> termIndexs, std::vector<term> EPI) {
+
+    for (unsigned int i = 0; i < termIndexs.size(); i++) {
+        for (unsigned int j = 0; j < EPI.size(); j++) {
+            if (EPI[j].isInIndex(termIndexs[i])) {
+                termIndexs.erase(termIndexs.begin() + i);
+                i--;
+                break;
             }
         }
     }
 
+    return termIndexs;
+}
 
-    // [Index of mN, count]
-    vector<pair<int, int>> result;
+std::vector<term> getLastPrimeImplicant(std::vector<term> PI, std::vector<term> EPI) {
 
-    for (unsigned int i = 0; i < initTerm.size(); i++) {
-        int count = 0;
-        for (unsigned int j = 0; j < PI.size(); j++) {
-            if (tableEPI[i][j]) count++;
+    for (unsigned int i = 0; i < PI.size(); i++) {
+        for (unsigned int j = 0; j < EPI.size(); j++) {
+            if (PI[i].booleanFunc == EPI[j].booleanFunc) PI.erase(PI.begin() + i);
         }
-        result.push_back(pair<int, int>(initTerm[i].mN[0], count));
     }
 
-    printf("%d", result.size());
+    return PI;
+}
 
-    return EPI;
+
+std::vector<term> runPetrickMethod(std::vector<term> EPI, std::vector<term> lastPI, std::vector<int> lastTermIndex) {
+    using namespace std;
+
+    // Polynomial()[] -> +[] -> X[]
+    vector<vector<vector<term>>> polynomial;
+    polynomial.resize(lastTermIndex.size());
+
+    for (unsigned int i = 0; i < lastPI.size(); i++) {
+        for (unsigned int j = 0; j < lastTermIndex.size(); j++) {
+            if (lastPI[i].isInIndex(lastTermIndex[j])) polynomial[j].push_back({ {lastPI[i]} });
+        }
+    }
+
+    vector<vector<term>> stagedPoly;
+    vector<term> tmp;
+
+    for (unsigned int i = 0; i < polynomial.size(); i++) {
+        for (unsigned int j = 0; j < polynomial[0].size(); j++) {
+            for (unsigned int k = 0; k < polynomial[1].size(); k++) {
+                for (unsigned int a = 0; a < polynomial[0][j].size(); a++) tmp.push_back(polynomial[0][j][a]);
+                tmp.push_back(polynomial[1][k][0]);
+                stagedPoly.push_back(tmp);
+                tmp.clear();
+            }
+        }
+        polynomial.erase(polynomial.begin() + 1);
+        polynomial[0] = stagedPoly;
+        stagedPoly.clear();
+    }
+
+    vector<vector<term>> expanedPolys = polynomial[0];
+
+    for (unsigned int i = 0; i < expanedPolys.size(); i++) {
+        for (unsigned int j = 0; j < expanedPolys[i].size(); j++) {
+            for (unsigned int k = j+1; k < expanedPolys[i].size(); k++) {
+                if (expanedPolys[i][j].booleanFunc == expanedPolys[i][k].booleanFunc) expanedPolys[i].erase(expanedPolys[i].begin() + k);
+            }
+        }
+        sort(expanedPolys[i].begin(), expanedPolys[i].end());
+    }
+    sort(expanedPolys.begin(), expanedPolys.end());
+    
+    for (unsigned int i = 0; i < expanedPolys.size()-1; i++) {
+        if (expanedPolys[i].size() == expanedPolys[i + 1].size()) {
+            int sameCount = 0;
+            for (unsigned int j = 0; j < expanedPolys[i].size(); j++) {
+                if (expanedPolys[i][j].booleanFunc == expanedPolys[i + 1][j].booleanFunc) sameCount++;
+            }
+            if (sameCount == expanedPolys[i].size()) {
+                expanedPolys.erase(expanedPolys.begin() + i);
+                i--;
+            }
+        }
+    }
+
+    for (unsigned int i = expanedPolys.size() - 1; i > 0; i--) {
+        for (unsigned int j = 0; j < i; j++) {
+            if (expanedPolys[j].size() > expanedPolys[j + 1].size()) std::swap(expanedPolys[j], expanedPolys[j + 1]);
+        }
+    }
+
+    vector<term> result;
+
+    for (unsigned int i = 0; i < EPI.size(); i++) {
+        result.push_back(EPI[i]);
+    }
+    for (unsigned int i = 0; i < expanedPolys[0].size(); i++) {
+        result.push_back(expanedPolys[0][i]);
+    }
+
+    return result;
 }
 
 int main() {
@@ -231,9 +364,13 @@ int main() {
     readFile(data);
 
     vector<term> initTerm = expandBooleanFunction(data);
-    vector<term> primeImplicant = mergeBooleanFunctions(initTerm);
-    printf("%d", primeImplicant.size());
-    vector<term> EPI = getEssentialPrimeImplicant(initTerm, primeImplicant);
+    vector<int> dontCareIndex = getDontCareTerms(initTerm);
+    vector<int> normalTermIndex = getNormalTermIndex(initTerm);
+    vector<term> PI = mergeBooleanFunctions(initTerm, dontCareIndex);
+    vector<term> EPI = getEssentialPrimeImplicant(normalTermIndex, PI);
+    vector<int> lastTermIndex = getLastTermIndex(normalTermIndex, EPI);
+    vector<term> lastPI = getLastPrimeImplicant(PI, EPI);
+    vector<term> result = runPetrickMethod(EPI, lastPI, lastTermIndex);
 
     return 0;
 }
