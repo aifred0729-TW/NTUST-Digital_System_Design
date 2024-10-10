@@ -384,7 +384,7 @@ std::string buildResultBuffer(std::vector<term> result) {
     std::string buffer = "";
 
     buffer += ".i ";
-    buffer += std::to_string(result.size());
+    buffer += std::to_string(result[0].booleanFunc.size());
     buffer += '\n';
     buffer += ".o 1\n";
     buffer += ".lib";
