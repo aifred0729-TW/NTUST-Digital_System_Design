@@ -424,13 +424,17 @@ std::string generateDotResult(kiss& k) {
 }
 
 void writeFile(kiss& k, std::string filename) {
-    std::ofstream fp(filename);
-    std::string buffer = generatekissResult(k);
-    fp << buffer;
-    fp.close();
+    std::ofstream kiss(filename + ".kiss");
+    std::ofstream dot(filename + ".dot");
+    
+    std::string kissResult = generatekissResult(k);
+    std::string dotResult = generateDotResult(k);
 
-    buffer = generateDotResult(k);
-    std::cout << buffer;
+    kiss << kissResult;
+    dot << dotResult;
+    
+    kiss.close();
+    dot.close();
 
     return;
 }
@@ -481,7 +485,7 @@ void DebugMessage(int opcode, kiss k) {
 
 int main(int argc, char* argv[]) {
 
-    if (argc < 4) {
+    if (argc < 3) {
         std::cout << "Usage : " << argv[0] << " {input.kiss} {output name}" << std::endl;
         std::cout << "  output name \\" << std::endl;
         std::cout << "               | - output.kiss" << std::endl;
@@ -489,12 +493,15 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     
-    kiss k = readFile("case5.kiss");
+    std::string inputFile = argv[1];
+    std::string outputFile = argv[2];
+
+    kiss k = readFile(inputFile);
     generateStateMatrix(k);
     printMatrix(k);
     optimizationMatrix(k, 1);
     DebugMessage(2, k);
     simplifyStatus(k);
-    writeFile(k, "result.kiss");
+    writeFile(k, outputFile);
     return 0;
 }
