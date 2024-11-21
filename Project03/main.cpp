@@ -284,6 +284,9 @@ void simplifyProcess(int remove, int replace, kiss& k) {
     for (size_t i = 0; i < k.statusMatrix[remove].size(); i++) {
         k.statusMatrix[remove][i].erase(k.statusMatrix[remove][i].begin(), k.statusMatrix[remove][i].end());
     }
+
+    k.nameMap.erase(std::string(1, ('a' + remove)));
+
     printMatrix(k);
 
     return;
