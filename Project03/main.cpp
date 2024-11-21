@@ -490,6 +490,8 @@ int main(int argc, char* argv[]) {
         std::cout << "  output name \\" << std::endl;
         std::cout << "               | - output.kiss" << std::endl;
         std::cout << "               | - output.dot" << std::endl;
+        std::cout << "Example :" << std::endl;
+        std::cout << "./main meow.kiss result" << std::endl;
         return 1;
     }
     
