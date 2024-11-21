@@ -3,6 +3,7 @@
 #include <vector>
 #include <utility>
 #include <fstream>
+#include <algorithm>
 #include <sstream>
 #include <set>
 #include <map>
@@ -351,29 +352,38 @@ std::string generateDotInitLine(std::string s) {
     return buffer;
 }
 
-std::string generateDotStateLine(kiss& k, int index) {
+std::string generateDotStateLine(kiss& k) {
     std::string buffer = "";
 
-    std::string current = k.getNameByIndex(k.statuses[index].current);
-    std::string next = k.getNameByIndex(k.statuses[index].next);
+    std::string current = k.getNameByIndex(k.statuses[0].current);
+    std::string next = k.getNameByIndex(k.statuses[0].next);
 
-    int zero = getStatusIndex(k.statuses[index].current, 0, k.statuses);
-    int one = getStatusIndex(k.statuses[index].current, 1, k.statuses);
+    int zero = getStatusIndex(k.statuses[0].current, 0, k.statuses);
+    int one = getStatusIndex(k.statuses[0].current, 1, k.statuses);
 
     buffer += "    ";
     buffer += current;
     buffer += " -> ";
     buffer += next;
     buffer += " [label=\"";
-    buffer += std::to_string(k.statuses[index].input);
-    buffer += "/";
-    buffer += std::to_string(k.statuses[index].output);
 
-    if (k.statuses[zero].next == k.statuses[one].next) {
-        buffer += ",";
-        buffer += k.statuses[one].input;
+    if (zero != -1 && one != -1 && k.statuses[zero].next == k.statuses[one].next) {
+        buffer += std::to_string(k.statuses[zero].input);
         buffer += '/';
-
+        buffer += std::to_string(k.statuses[zero].output);
+        buffer += ",";
+        buffer += std::to_string(k.statuses[one].input);
+        buffer += '/';
+        buffer += std::to_string(k.statuses[one].output);
+        k.statuses.erase(k.statuses.begin() + zero);
+        one = getStatusIndex(k.statuses[0].current, 1, k.statuses);
+        k.statuses.erase(k.statuses.begin() + one);
+    }
+    else {
+        buffer += std::to_string(k.statuses[0].input);
+        buffer += "/";
+        buffer += std::to_string(k.statuses[0].output);
+        k.statuses.erase(k.statuses.begin());
     }
 
     buffer += "\"];\n";
@@ -384,20 +394,28 @@ std::string generateDotStateLine(kiss& k, int index) {
 std::string generateDotResult(kiss& k) {
     std::string buffer = "";
     std::string pattern = "    ";
+    std::vector<std::string> names;
 
     buffer += "digraph STG {\n";
     buffer += pattern; buffer += "rankdir=LR;\n\n";
     buffer += pattern; buffer += "INIT [shape=point];\n";
 
     for (auto &s : k.nameMap) {
-        buffer += generateDotInitLine(s.second);
+        names.push_back(s.second);
     }
+
+    std::sort(names.begin(), names.end());
+
+    for (auto& s : names) {
+        buffer += generateDotInitLine(s);
+    }
+
 
     buffer += '\n';
     buffer += pattern; buffer += "INIT -> "; buffer += k.getNameByIndex(k.initialStatus); buffer += ";\n";
     
-    for (size_t i = 0; i < k.lineCount; i++) {
-        buffer += generateDotStateLine(k, i);
+    while(k.statuses.size() != 0) {
+        buffer += generateDotStateLine(k);
     }
 
     buffer += "}\n";
@@ -461,7 +479,16 @@ void DebugMessage(int opcode, kiss k) {
     return;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+
+    if (argc < 4) {
+        std::cout << "Usage : " << argv[0] << " {input.kiss} {output name}" << std::endl;
+        std::cout << "  output name \\" << std::endl;
+        std::cout << "               | - output.kiss" << std::endl;
+        std::cout << "               | - output.dot" << std::endl;
+        return 1;
+    }
+    
     kiss k = readFile("case5.kiss");
     generateStateMatrix(k);
     printMatrix(k);
