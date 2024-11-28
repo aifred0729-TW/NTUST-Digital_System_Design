@@ -37,12 +37,12 @@ public:
         for (auto s = nameMap.begin(); s != nameMap.end(); ++s) {
             if (s->second == name) return s->first.c_str()[0];
         }
-        return NULL;
+        return '\0';
     }
 
     void nameAlloc(int& nameIndex, std::string name) {
         char result = existName(name);
-        if (result == NULL) {
+        if (result == '\0') {
             nameIndex = nameAllocation;
             nameMap.insert(std::pair<std::string, std::string>(std::string(1, ('a' + nameAllocation)), name));
             nameAllocation++;
@@ -490,6 +490,8 @@ int main(int argc, char* argv[]) {
         std::cout << "  output name \\" << std::endl;
         std::cout << "               | - output.kiss" << std::endl;
         std::cout << "               | - output.dot" << std::endl;
+        std::cout << "Example :" << std::endl;
+        std::cout << "./main meow.kiss result" << std::endl;
         return 1;
     }
     
